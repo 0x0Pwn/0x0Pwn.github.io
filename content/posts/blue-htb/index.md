@@ -3,12 +3,14 @@ title: "Blue"
 date: 2023-06-26T12:51:31+02:00
 tags: ["smb","windows"]
 categories: ["hackthebox"]
-author: "Ro Hacks"
+author: "0x0Pwn"
+image: /HTB/Blue.png
+description: "This write-up will be about the HackTheBox machine called Blue. "
 showToc: true
 TocOpen: false
 draft: false
 hidemeta: false
-comments: false
+comments: true
 description: "A windows room that has vulnerable samba service running."
 canonicalURL: "https://canonical.url/to/page"
 disableHLJS: true # to disable highlightjs

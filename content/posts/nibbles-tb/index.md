@@ -3,7 +3,8 @@ title: "Nibbles"
 date: 2023-07-04T13:02:46+02:00
 tags: ["web","privesc","linux"]
 categories: ["hackthebox"]
-author: "Ro Hackss"
+author: "0x0Pwn"
+image: /HTB/Nibbles.png
 showToc: true
 TocOpen: false
 draft: false

@@ -3,7 +3,8 @@ title: "Devel"
 date: 2023-07-03T17:35:59+02:00
 tags: ["ftp","windows","web","privesc"]
 categories: ["hackthebox"]
-author: "Ro Hackss"
+author: "0x0Pwn"
+image: /HTB/Devel.png
 showToc: true
 TocOpen: false
 draft: false

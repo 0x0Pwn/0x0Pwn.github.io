@@ -3,7 +3,8 @@ title: "Legacy"
 date: 2023-06-26T00:50:22+02:00
 tags: ["smb","windows"]
 categories: ["hackthebox"]
-author: "Ro Hackss"
+author: "0x0Pwn"
+image: /HTB/Legacy.png
 showToc: true
 TocOpen: false
 draft: false
