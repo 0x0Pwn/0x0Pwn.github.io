@@ -3,7 +3,8 @@ title: "Bashed"
 date: 2023-06-24T23:52:47+02:00
 tags: ["privesc","web","linux"]
 categories: ["hackthebox"]
-author: "Ro Hackss"
+author: "0x0Pwn"
+image: /HTB/Bashed.png
 showToc: true
 TocOpen: false
 draft: false
