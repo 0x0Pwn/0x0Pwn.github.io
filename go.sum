@@ -1,0 +1,14 @@
+github.com/CaiJimmy/hugo-theme-stack v2.6.0+incompatible h1:HOf88geWucQwmTmNCFgHNidVTXjv9jLz3UA72gyFQTE=
+github.com/CaiJimmy/hugo-theme-stack v2.6.0+incompatible/go.mod h1:Tacngkxf7u2kfufDzxoX7yqktykqc/Vi1LwJOHGE6Nw=
+github.com/CaiJimmy/hugo-theme-stack/v3 v3.11.0 h1:HyHdT59BYMdPSjDljIWpJY/DT+NPiZgfqMlJBQwOa1A=
+github.com/CaiJimmy/hugo-theme-stack/v3 v3.11.0/go.mod h1:IPmCXiIxlFSLFYS0tOmYP6ySLviyeNVSabyvSuaxD+I=
+github.com/Lednerb/bilberry-hugo-theme v1.0.1 h1:KifMfR4SPyWdRh2TMjgxS/o4kybLmBP1csSdFa788xY=
+github.com/Lednerb/bilberry-hugo-theme v1.0.1/go.mod h1:dKE4twulJFrdgpUgcNI1NrzjJL2V4p1+xwjVZD1wuEE=
+github.com/leonardofaria/bento v1.0.0 h1:Y5thQdUADjpsMZaqwIU3f52rqYvKl6c/IJiqniDZBYQ=
+github.com/leonardofaria/bento v1.0.0/go.mod h1:Hbxd6tt8E89d4fleTMJi8Z36YqxvE50Cz4+onrFWYiY=
+github.com/nodejh/hugo-theme-mini v0.0.0-20220512082144-46ecde0fe8c8 h1:2al6kFv96KDi9vgrtI/UhKWAGH3e/lFEEnaw+5Dp4Yg=
+github.com/nodejh/hugo-theme-mini v0.0.0-20220512082144-46ecde0fe8c8/go.mod h1:+Rl6qKesH3DeBOjXcmPXB1L/LwD3RqXzopTzon/jv5Q=
+github.com/surajmandalcell/potato-dark v0.0.0-20210630132014-3aace71641c9 h1:mczDNoJ0Wcg2BsSVG4FcJ2dnMyCz+sI9tR3VUAtRIMM=
+github.com/surajmandalcell/potato-dark v0.0.0-20210630132014-3aace71641c9/go.mod h1:KZGN+mI59tbtv3mICcsHY1URt1pI7puhb5GeSiiNSz0=
+github.com/theNewDynamic/gohugo-theme-ananke v0.0.0-20220506152654-a98a70782c8d h1:SJoe64vzQsb1ok1cib7zTnP9UTCdUASLmmuqie4T6lw=
+github.com/theNewDynamic/gohugo-theme-ananke v0.0.0-20220506152654-a98a70782c8d/go.mod h1:yY14BLqqh5G61rO81YcJKMHY1rClY5iIiUK+K2JKSUM=
