@@ -1,7 +1,7 @@
 ---
 title: "Nineveh"
 date: 2023-06-26T12:51:31+02:00
-tags: ["smb",""]
+tags: ["linux","lfi"]
 categories: ["hackthebox"]
 author: "0x0Pwn"
 image: /HTB/Nineveh.png
@@ -47,114 +47,71 @@ editPost:
 ## Tools Used
 
 - Nmap
-- Metasploit
-- Meterpreter
+- Searchsploit
+- 
 
 ## Port Scanning
 
 Other room, other port scan.
 
 ```bash
-PORT      STATE SERVICE     REASON          VERSION
-135/tcp   open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-139/tcp   open  netbios-ssn syn-ack ttl 127 Microsoft Windows netbios-ssn
-445/tcp   open              syn-ack ttl 127 Windows 7 Professional 7601 Service Pack 1 microsoft-ds (workgroup: WORKGROUP)
-49152/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49153/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49154/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49155/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49156/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49157/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-Service Info: Host: HARIS-PC; OS: Windows; CPE: cpe:/o:microsoft:windows
-
-Host script results:
-| smb-os-discovery:
-|   OS: Windows 7 Professional 7601 Service Pack 1 (Windows 7 Professional 6.1)
-|   OS CPE: cpe:/o:microsoft:windows_7::sp1:professional
-|   Computer name: haris-PC
-|   NetBIOS computer name: HARIS-PC\x00
-|   Workgroup: WORKGROUP\x00
-|_  System time: 2023-06-26T00:26:53+01:00
-| smb2-security-mode:
-|   2:1:0:
-|_    Message signing enabled but not required
-|_clock-skew: mean: -19m58s, deviation: 34m37s, median: 0s
-| smb2-time:
-|   date: 2023-06-25T23:26:57
-|_  start_date: 2023-06-25T23:12:05
-| p2p-conficker:
-|   Checking for Conficker.C or higher...
-|   Check 1 (port 12383/tcp): CLEAN (Couldn't connect)
-|   Check 2 (port 28365/tcp): CLEAN (Couldn't connect)
-|   Check 3 (port 19006/udp): CLEAN (Timeout)
-|   Check 4 (port 26942/udp): CLEAN (Failed to receive data)
-|_  0/4 checks are positive: Host is CLEAN or ports are blocked
-| smb-security-mode:
-|   account_used: guest
-|   authentication_level: user
-|   challenge_response: supported
-|_  message_signing: disabled (dangerous, but default)
+nmap -p- --open -sCV -sS --min-rate 5000 -vvv -n -Pn 10.10.10.43 -oN escaneo 
 ```
+![Untitled](/HTB/nmap-nineveh.png)
 
-I found 2 open ports for samba service 139 and 445 and the other ones are for msrpc. Let’s focus on samba.
+I found only 1 open port. Let’s focus on it.
 
 ## Enumeration
 
-I am going to enumerate the possible vulnerabilities with `sudo nmap 10.10.10.14 -p 139,445 --script=vuln` 
+First I saw is that there are two url's one with https and one other with http. I found two diferent login page
+one on each url.
 
-```bash
-Host script results:
-|_smb-vuln-ms10-061: NT_STATUS_OBJECT_NAME_NOT_FOUND
-| smb-vuln-ms17-010:
-|   VULNERABLE:
-|   Remote Code Execution vulnerability in Microsoft SMBv1 servers (ms17-010)
-|     State: VULNERABLE
-|     IDs:  CVE:CVE-2017-0143
-|     Risk factor: HIGH
-|       A critical remote code execution vulnerability exists in Microsoft SMBv1
-|        servers (ms17-010).
-|
-|     Disclosure date: 2017-03-14
-|     References:
-|       https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-0143
-|       https://blogs.technet.microsoft.com/msrc/2017/05/12/customer-guidance-for-wannacrypt-attacks/
-|_      https://technet.microsoft.com/en-us/library/security/ms17-010.aspx
-|_smb-vuln-ms10-054: false
-```
+![Untitled](/HTB/gobuster-nineveh.png)
 
-We have a eternal blue vulnerability MS17-010 (CVE-2017-0143) which gives us RCE in the Microsoft Samba services that are vulnerable, this time I am going to use metasploit to exploit it.
 
 ## Exploiting
 
-![Untitled](/HTB/blue-1.png)
+After trying some basic SQL injections and some basic names I decided to brute force with Hydra. With the following commands:
+```bash
+hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.10.10.43 https-post-form /db/index.php:"password=^PASS^&proc_login=^USER^:Incorrect password."
+hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.10.10.43 https-post-form /department/login.php:"password=^PASS^&proc_login=^USER^:Invalid password."
+```
 
-Upon started metasploit we got that search results, the second one fits well in this situation. I am going to set the Remote Host and the Local Host as any metasploit exploit and then running it.
+![Untitled](/HTB/db_nineveh.png)
+
+![Untitled](/HTB/hydra_nineveh.png)
+
+When I logged into both I got these interfaces:
+
+![Untitled](/HTB/login-nineveh.png)
+
+![Untitled](/HTB/dbcreate-nineveh.png)
+
+In the page of department, I saw that in **notes** menu the url changes to something so strange. So as always I tried
+to find LFI and surprise there is jeje.
+
+![Untitled](/HTB/lfi-nineveh.png)
+
+Once I discovered this I will go to make an oo on the other website. The name of phpLiteAdimn was strange to me since it 
+also had a version, so I looked it up in searchsploit and found that there were several vulnerabilities, one of them that 
+matched my version said like this: if I manage to create a database and save it in .php, it should be stored with the rest 
+in /var/temp/... and I create a table with a single box and enter a code in PHP (reverse shell), then I can access from 
+the other page because of the LFI vuln and execute the php command.
+
+![Untitled](/HTB/searchsploit-nineveh.png)
+
+![Untitled](/HTB/dbcreate-nineveh.png)
+
+And suprise we can controle terminal with that so let's do a reverse shell and ...
+
+![Untitled](/HTB/bash-nineveh.png)
+
+![Untitled](/HTB/pwnd-nineveh.png)
+
 
 ## Gaining an Initial Foothold
 
-We are in now
 
-![Untitled](/HTB/blue-5.png)
-
-We can’t use the dir and whoami command, but my intuition tells me that we are privileged users.
-
-![Untitled](/HTB/blue-4.png)
-
-![Untitled](/HTB/blue-2.png)
-
-Let’s find ourselves the directory, If we go to the root directory C:\ we can find users directory and inside there are two interesting users the Administrator and haris. In his desktops there are the flags.
-
-We are privilaged users, my intuition has not failed.
-
-## Flags
-
-**User Flag**
-
-![Untitled](/HTB/blue-6.png)
-
-**Root Flag**
-
-![Untitled](/HTB/blue-7.png)
 
 ## Lessons Learned
 
