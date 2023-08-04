@@ -94,7 +94,7 @@ the exploit code:
 
 There's no escalation on this machine due to I'm root at the first time. 
 
-![Untitled](/HTB/flags-sniper.png)
+![Untitled](/HTB/flags-sense.png)
 
 
 ## Leason Learned

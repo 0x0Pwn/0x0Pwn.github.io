@@ -90,7 +90,7 @@ and listening on my pc
 ```bash
  nc -nlvp 443
 ```
-![Untitled](/HTB/www-data-cronos.png)
+![Untitled](/HTB/ww-data-cronos.png)
 
 The machine is pawned !!
 
@@ -148,7 +148,6 @@ write/read permissions. So let's modify them to include this:
 Then, I did `bash -p`, and I'm root !!
 
 ![Untitled](/HTB/root-cronos.png)
-
 
 ## Lessons Learned
 
