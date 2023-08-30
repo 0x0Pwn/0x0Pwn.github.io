@@ -1,7 +1,7 @@
 ---
 title: "Bastard"
 date: 2023-08-10T11:30:03+00:00
-tags: ["Drupal v7","widnows","sherlock.ps1"]
+tags: ["Drupal v7","windows","sherlock.ps1"]
 categories: ["hackthebox"]
 author: "0x0Pwn"
 image: "/HTB/Bastard.png"
