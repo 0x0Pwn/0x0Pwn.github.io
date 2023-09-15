@@ -2,7 +2,7 @@
 
 title: "Conceal"
 date: 2023-08-10T11:30:03+00:00
-tags: ["snmp","web","windows","udp","vpn"]
+tags: ["web","windows","udp","vpn","snmp"]
 categories: ["hackthebox"]
 author: "0x0Pwn"
 image: "/HTB/Conceal.png"
