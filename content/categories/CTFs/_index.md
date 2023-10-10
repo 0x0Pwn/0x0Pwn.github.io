@@ -1,8 +1,8 @@
 ---
-title: "Hack The Box"
+title: "CTF's"
 description: "This is where I will upload all machines I do"
-slug: "hack the box"
-image: "HTB.jpg"
+slug: "CTF's"
+image: "R.jpg"
 style:
     background: "#2a9d8f"
     color: "#fff"
