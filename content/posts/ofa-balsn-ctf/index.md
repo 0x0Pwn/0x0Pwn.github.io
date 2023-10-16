@@ -5,7 +5,7 @@ date: 2023-08-10T11:30:03+00:00
 tags: ["web","JA3 impersonate"]
 categories: ["CTFs"]
 author: "0x0Pwn"
-image: "/CTFs/OFA.png"
+image: "/CTFs/1-saas.png"
 comments: false
 description: "This is a friendly server machine that is vulnerable because we can impersonate the JA3 signature."
 
