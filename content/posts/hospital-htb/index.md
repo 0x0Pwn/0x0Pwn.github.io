@@ -6,7 +6,7 @@ categories: ["hackthebox"]
 author: "0x0Pwn"
 image: "/HTB/Hospital.png"
 comments: false
-description: ""
+description: "This ip hosts two machines, a linux machine where I entered first and a windows machine on port 443 where I entered last."
 ---
 
 ## Room Information
@@ -21,8 +21,7 @@ description: ""
 
 - Nmap
 - crackmapexec
-- msfvenom
-- icacls
+- rccpclient
 - smbserver
 - smbclient
 - searchsploit
