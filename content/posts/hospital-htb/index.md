@@ -1,7 +1,4 @@
-# Hospital
-
 ---
-
 title: "Hsopital"
 date: 2023-11-22T11:30:03+00:00
 tags: ["web","windows","GhostScript"]
@@ -9,8 +6,7 @@ categories: ["hackthebox"]
 author: "0x0Pwn"
 image: "/HTB/Hospital.png"
 comments: false
-description: "This is a friendly windows machine that is vulnerable because it presents an outdated version of ports 9255 and 9256 (AChat)."
-
+description: ""
 ---
 
 ## Room Information
@@ -18,6 +14,8 @@ description: "This is a friendly windows machine that is vulnerable because it p
 - Room name: Hospital
 - Difficulty level: Medium
 - Room link: [https://app.hackthebox.com/machines/hospital](https://app.hackthebox.com/machines/hospital)
+
+![Untitled](/HTB/Hospital.png)
 
 ## Tools Used
 
