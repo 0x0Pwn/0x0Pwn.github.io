@@ -2,7 +2,7 @@
 
 title: "DevVortex"
 date: 2023-11-29T11:30:03+00:00
-tags: ["web","windows","joomla"]
+tags: ["web","windows","joomla", "apport-cli"]
 categories: ["hackthebox"]
 author: "0x0Pwn"
 image: "/HTB/Devvortex.png"
@@ -15,7 +15,7 @@ description: "This is a friendly linux machine that is vulnerable due a low vers
 
 - Room name: DevVortex
 - Difficulty level: Easy
-- Room link: [https://app.hackthebox.com/machines/](https://app.hackthebox.com/machines/bounty)devvortex
+- Room link: [https://app.hackthebox.com/machines/](https://app.hackthebox.com/machines/devvortex)
 
 ![Untitled](/HTB/Devvortex.png)
 
