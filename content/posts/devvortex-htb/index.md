@@ -108,7 +108,7 @@ or
 hashcat -m 3200 -a 0 -w 4 hash /usr/share/wordlists/rockyou.txt
 ```
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/1758efdd-566e-417e-b6f2-2af99c2c17f7/12d2695a-e000-4583-b0eb-acea8dd85502/Untitled.png)
+![Untitled](/HTB/devvortex-10.png)
 
 So I’m actually user `logan` 👹
 
@@ -116,7 +116,7 @@ Then I enter by ssh to user logan…
 
 First I always do is `sudo -l` and I saw this:
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/1758efdd-566e-417e-b6f2-2af99c2c17f7/590a70a4-c444-4385-9b3d-bbc2e85bdbb5/Untitled.png)
+![Untitled](/HTB/devvortex-11.png)
 
 The net thing I did was searching this program on google and throwing an instance ofr [`procmon.sh`](http://procmon.sh) to saw what procedures were running on the backend, and I found someone interesenting, related with apport-cli:
 
@@ -138,14 +138,14 @@ pd: [`procmon.sh`](http://procmon.sh) code
 
 I saw that using a example comamnd like this → `sudo apport-cli -c xxx.crash` didn’t works:
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/1758efdd-566e-417e-b6f2-2af99c2c17f7/ec58aced-e54d-4e27-97c0-0846c8fc3dcb/Untitled.png)
+![Untitled](/HTB/devvortex-12.png)
 
 But I saw in a post of the above link that if you put `less` at the end of the command we can see unexpected working jejeje 
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/1758efdd-566e-417e-b6f2-2af99c2c17f7/1e2ac1a4-9411-47e3-9a6b-8af463671dd0/Untitled.png)
+![Untitled](/HTB/devvortex-13.png)
 
 [systemd 246 Local Root Privilege Escalation ≈ Packet Storm](https://packetstormsecurity.com/files/174130/systemd-246-Local-Root-Privilege-Escalation.html)
 
-![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/1758efdd-566e-417e-b6f2-2af99c2c17f7/90ad84ca-97bf-46d4-a800-1280824cef27/Untitled.png)
+![Untitled](/HTB/devvortex-14.png)
 
 Soo I did this and now I’m user root 👹
