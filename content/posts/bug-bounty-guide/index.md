@@ -3,7 +3,7 @@ title: Hunting Methoodology Checklist
 date: 2023-12-09T11:30:03+00:00
 author: 0x0Pwn
 image: "/OTH/BugBountyGuide.jpeg"
-categories: [Bug Bounty]
+categories: [BugBounty]
 tags: [bugbounty, methodology, checklist]
 description: "This is a friendly linux machine that is vulnerable due a low version of Joomla db."
 ---
